@@ -65,7 +65,21 @@ Contributions to Sayara are greatly appreciated. Here is where we acknowledge th
 
 | Contributor | Date       | Contribution         |
 |-------------|------------|----------------------|
-| You         | 2024-04-07 | Introducing Basics   |
+| [Akku]([Akku](https://github.com/akashdeepghosh))        | 2023-09-02 | Project Roadmap      |
+|-------------|------------|----------------------|
+| [ThatAnonyG]([ThatAnonyG](https://github.com/ThatAnonyG))  | 2023-09-11 | VisualStudio Basics  |
+|-------------|------------|----------------------|
+| [Ayush]([Ayush](https://github.com/ayush123460))       | 2023-10-07 | Hosting Basics       |
+|-------------|------------|----------------------|
+| [Nano]([Nano](https://github.com/raaasin))        | 2023-11-18 | Basics of AI(ML&LLM) |
+|-------------|------------|----------------------|
+| [Johna]([Johna](https://github.com/Kartikeya-agg))       | 2023-11-29 | Intro to Vercel      |
+|-------------|------------|----------------------|
+| [MJKhan]([MJKhan](https://github.com/MJKhan1400))       | 2023-12-02 | Helping in Frontend  |
+|-------------|------------|----------------------|
+| [FLaDER](https://github.com/DevyanshKalra)      | 2024-01-15 | UIUX Basics          |
+|-------------|------------|----------------------|
+
 
 *More names and contributions will be added here.*
 
