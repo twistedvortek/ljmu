@@ -3,10 +3,13 @@ from flask_restful import Api, Resource
 from werkzeug.utils import secure_filename
 from celery import Celery
 import os
+import time
 from moviepy.editor import VideoFileClip
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 api = Api(app)  # Initialize Flask-RESTful
+socketio = SocketIO(app)
 
 # Configuration
 UPLOAD_FOLDER = './uploads'
@@ -48,71 +51,58 @@ def upload_file():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
-        # Check video duration
         if not allowed_duration(filepath):
+            os.remove(filepath)  # Clean up by removing the uploaded file
             return jsonify({'error': 'Video duration exceeds the allowed limit.'}), 400
 
-        # Process the file asynchronously
         task = process_file.apply_async(args=[filepath])
         return jsonify({'message': 'File uploaded. Processing started.', 'task_id': task.id})
 
-@app.route('/status/<task_id>')
-def taskstatus(task_id):
-    task = process_file.AsyncResult(task_id)
-    response = {
-        'state': task.state,
-        'current': 0,
-        'total': 100,
-        'status': 'Pending...'
-    }
-    if task.info:
-        response.update(task.info)
-    return jsonify(response)
-
 @celery.task(bind=True)
 def process_file(self, filepath):
-    # Placeholder for your processing logic
+    self.update_state(state='PROGRESS', meta={'current': 0, 'total': 100, 'status': 'Starting'})
+    # Example of process logic
     processed_output = yolo_deepsort_process(filepath)
 
-        # Simulate processing progress
     for i in range(1, 101):
         self.update_state(state='PROGRESS', meta={'current': i, 'total': 100, 'status': 'Processing'})
-        time.sleep(0.1)  # Simulate processing delay
-    
-    # Save processed output to PROCESSED_FOLDER and return path
+        time.sleep(0.1)  # Simulated processing delay
+
     processed_filepath = os.path.join(PROCESSED_FOLDER, os.path.basename(filepath))
-    # Example processing function call
-    # actual_processing_function(filepath, processed_filepath)
-    return {'processed_filepath': processed_filepath, 'status': 'Completed'}
+    return {'current': 100, 'total': 100, 'status': 'Completed', 'processed_filepath': processed_filepath}
+
+@socketio.on('connect')
+def test_connect():
+    emit('after connect',  {'data':'Connected'})
 
 def yolo_deepsort_process(filepath):
-    # Dummy processing function - replace with actual processing
-    return filepath  # For demo purposes, return the same path
+    # Replace with your processing function
+    return filepath  # Demo purpose
 
-# Define your resources
+def gen_frames():
+    cap = cv2.VideoCapture(0)  # or another video source
+    while True:
+        success, frame = cap.read()
+        if not success:
+            break
+        else:
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(gen_frames(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
 class UploadAPI(Resource):
     def post(self):
-        if 'file' not in request.files:
-            return {'error': 'No file part'}, 400
-        file = request.files['file']
-        if file.filename == '':
-            return {'error': 'No selected file'}, 400
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-
-            # Check video duration
-            if not allowed_duration(filepath):
-                return {'error': 'Video duration exceeds the allowed limit. Please keep the video short as this is for demonstration purposes only.'}, 400
-
-            # Process the file asynchronously
-            task = process_file.apply_async(args=[filepath])
-            return {'message': 'File uploaded. Processing started.', 'task_id': task.id}, 202
+        response = upload_file()
+        return response[0].get_json(), response[1]
 
 api.add_resource(UploadAPI, '/api/upload')
 
-# Existing routes and Celery tasks
-
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
+    socketio.run(app, debug=True)
