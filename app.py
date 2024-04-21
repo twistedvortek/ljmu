@@ -1,12 +1,12 @@
 from flask import Flask, request, render_template, jsonify
-from flask_restful import Api, Resource
+# from flask_restful import Api, Resource
 from werkzeug.utils import secure_filename
 from celery import Celery
 import os
 from moviepy.editor import VideoFileClip
 
 app = Flask(__name__)
-api = Api(app)  # Initialize Flask-RESTful
+# api = Api(app)  # Initialize Flask-RESTful
 
 # Configuration
 UPLOAD_FOLDER = './uploads'
@@ -104,7 +104,7 @@ class UploadAPI(Resource):
 
             # Check video duration
             if not allowed_duration(filepath):
-                return {'error': 'Video duration exceeds the allowed limit.'}, 400
+                return {'error': 'Video duration exceeds the allowed limit. Please keep the video short as this is for demonstration purposes only.'}, 400
 
             # Process the file asynchronously
             task = process_file.apply_async(args=[filepath])
