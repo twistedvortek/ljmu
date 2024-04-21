@@ -1,12 +1,12 @@
 from flask import Flask, request, render_template, jsonify
-# from flask_restful import Api, Resource
+from flask_restful import Api, Resource
 from werkzeug.utils import secure_filename
 from celery import Celery
 import os
 from moviepy.editor import VideoFileClip
 
 app = Flask(__name__)
-# api = Api(app)  # Initialize Flask-RESTful
+api = Api(app)  # Initialize Flask-RESTful
 
 # Configuration
 UPLOAD_FOLDER = './uploads'
