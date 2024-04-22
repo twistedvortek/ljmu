@@ -11,7 +11,8 @@ function startCamera() {
       video.srcObject = stream;
     })
     .catch(function(error) {
-      console.log("Something went wrong with accessing the camera!");
+      console.error("Error accessing the camera: ", error);
+      alert("An error occurred while accessing the camera. Please check camera permissions.");
     });
 }
 
